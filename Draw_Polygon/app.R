@@ -15,16 +15,22 @@ ui <-
       title = "Draw Polygons App"
     ),
     dashboardSidebar(
-      textInput("file_name_input", "enter file name",
+      textInput("file_name_input", "Enter file name",
                 placeholder = "Default"),
-      # Save Button
-      downloadButton("downloadData", "Download"),
       radioGroupButtons(
         inputId = "filetype",
         label = "File Type",
         choices = c("geojson","CSV"),
-        selected = "geojson"
-      )
+        selected = "geojson",
+        checkIcon = list(
+          yes = icon("ok", 
+                     lib = "glyphicon")),
+        status = "info"
+      ),
+      # Save Button
+      downloadButton("downloadData", "Download",
+                     style = "color: #fff; background-color: #27ae60; border-color: #fff;padding: 5px 14px 5px 14px;margin: 5px 5px 5px 12px; ")
+      
     ),
     dashboardBody(
       useShinyjs(),

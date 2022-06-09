@@ -18,7 +18,13 @@ ui <-
       textInput("file_name_input", "enter file name",
                 placeholder = "Default"),
       # Save Button
-      downloadButton("downloadData", "Download")
+      downloadButton("downloadData", "Download"),
+      radioGroupButtons(
+        inputId = "filetype",
+        label = "File Type",
+        choices = c("geojson","CSV"),
+        selected = "geojson"
+      )
     ),
     dashboardBody(
       useShinyjs(),
@@ -42,7 +48,6 @@ ui <-
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  
   # reactive container for the drawn polygon shapes
   polygons <- reactiveValues(
     shapes = NULL
@@ -62,7 +67,7 @@ server <- function(input, output) {
   # Watch for new polygons to be drawn and add to sf dataframe
   observeEvent(input$map_draw_new_feature,{
     feature <- input$map_draw_new_feature
-    
+  print(input$filetype)
     feature_sf <- geojsonsf::geojson_sf(jsonify::to_json(feature, unbox = T))
     
     polygons$shapes <- rbind(polygons$shapes, feature_sf)
@@ -75,10 +80,18 @@ server <- function(input, output) {
   # Downloadable geojson of polygons ----
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste(input$file_name_input, ".geojson", sep = "")
+      paste(input$file_name_input, ".", 
+            tolower(input$filetype), sep = "")
     },
     content = function(file) {
-      write_sf(polygons$shapes, file)
+      if(input$filetype == "CSV"){
+        out_WKT <- st_as_text(polygons$shapes$geometry)
+        out_polys <- st_drop_geometry(polygons$shapes)
+        out_polys$geometry <- out_WKT
+      } else if(input$filetype == "geojson"){
+        out_polys <- polygons$shapes
+      }
+      write_sf(out_polys, file)
     }
   )
   

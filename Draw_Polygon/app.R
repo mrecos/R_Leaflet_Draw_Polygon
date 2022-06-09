@@ -49,8 +49,8 @@ ui <-
       fluidRow(
         column(width = 12,
                box(width = NULL, solidHeader = TRUE, height = 500,
-                   tableOutput("tbl")
-                   # DTOutput("table1")
+                   # tableOutput("tbl")
+                   DTOutput("table1")
                )
         )
       )
@@ -68,15 +68,14 @@ server <- function(input, output) {
   # kept separate from coords b/c DT does not to sf objects
   # part of the design to allow edits/updates to table
   data_table <- reactiveValues(
-    # DTtable = NULL
     DTtable = NULL
   )
   
-  # output$table1 <- renderDT({
-  #   req(data_table$DTtable)
-  #   cols <- setdiff(colnames(data_table$DTtable),"_leaflet_id")
-  #   datatable(data_table$DTtable[,cols], editable = TRUE)
-  # })
+  output$table1 <- renderDT({
+    req(data_table$DTtable)
+    cols <- setdiff(colnames(data_table$DTtable),"_leaflet_id")
+    datatable(data_table$DTtable[,cols], editable = TRUE)
+  })
   
   # drawn map
   output$map <- renderLeaflet({
@@ -106,12 +105,12 @@ server <- function(input, output) {
     polygons$shapes <- rbind(polygons$shapes, feature_sf)
     print(polygons$shapes)
     
-    output$tbl <- renderTable(st_drop_geometry(polygons$shapes))
+    # output$tbl <- renderTable(st_drop_geometry(polygons$shapes))
     # DT stuff
-    # step_table <- st_drop_geometry(polygons$shapes)
-    # step_table$LABEL <- NA
-    # data_table$DTtable <- rbind(data_table$DTtable,
-    #                             step_table)
+    step_table <- st_drop_geometry(polygons$shapes)
+    step_table$LABEL <- NA
+    data_table$DTtable <- rbind(data_table$DTtable,
+                                step_table)
     
   })
   

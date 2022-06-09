@@ -62,7 +62,12 @@ server <- function(input, output) {
   # drawn map
   output$map <- renderLeaflet({
     leaflet() %>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
+      addProviderTiles("CartoDB.Positron",group = "CartoDB.Positron") %>%
+      addProviderTiles("OpenStreetMap", group = "OpenStreetMap") %>%
+      addProviderTiles("Esri.WorldImagery",group = "Esri.WorldImagery") %>%
+      addLayersControl(
+        baseGroups = c("CartoDB.Positron", "OpenStreetMap","Esri.WorldImagery"),
+        position = "topright") %>% 
       setView(lng = -98, lat = 39, zoom = 4) %>% 
       addDrawToolbar()
   })

@@ -61,7 +61,8 @@ ui <-
 server <- function(input, output) {
   # reactive container for the drawn polygon shapes
   polygons <- reactiveValues(
-    shapes = NULL
+    shapes = NULL,
+    joined = NULL
   )
   
   # reactive container for table values
@@ -76,6 +77,14 @@ server <- function(input, output) {
     cols <- setdiff(colnames(data_table$DTtable),"_leaflet_id")
     datatable(data_table$DTtable[,cols], editable = TRUE)
   })
+  
+  observeEvent(input$table1_cell_edit, {
+    row  <- input$table1_cell_edit$row
+    clmn <- input$table1_cell_edit$col
+    data_table$DTtable[row, clmn+1] <- input$table1_cell_edit$value
+    print(data_table$DTtable)
+  })
+  
   
   # drawn map
   output$map <- renderLeaflet({
@@ -106,8 +115,8 @@ server <- function(input, output) {
     print(polygons$shapes)
     
     # output$tbl <- renderTable(st_drop_geometry(polygons$shapes))
-    # DT stuff
-    step_table <- st_drop_geometry(polygons$shapes)
+    # DT - rbind new feature with LABEL column
+    step_table <- st_drop_geometry(feature_sf)
     step_table$LABEL <- NA
     data_table$DTtable <- rbind(data_table$DTtable,
                                 step_table)
@@ -121,12 +130,19 @@ server <- function(input, output) {
             tolower(input$filetype), sep = "")
     },
     content = function(file) {
+      # join sf and edits from DT
+      polygons$joined <- data_table$DTtable %>% 
+        left_join(select(polygons$shapes, "_leaflet_id", geometry), 
+                  by = "_leaflet_id") %>% 
+        st_sf() %>% 
+        st_transform(crs = "EPSG:4326")
+      
       if(input$filetype == "CSV"){
-        out_WKT <- st_as_text(polygons$shapes$geometry)
-        out_polys <- st_drop_geometry(polygons$shapes)
+        out_WKT <- st_as_text(polygons$joined$geometry)
+        out_polys <- st_drop_geometry(polygons$joined)
         out_polys$geometry <- out_WKT
       } else if(input$filetype == "geojson"){
-        out_polys <- polygons$shapes
+        out_polys <- polygons$joined
       }
       write_sf(out_polys, file)
     }

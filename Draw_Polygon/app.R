@@ -50,7 +50,9 @@ ui <-
         column(width = 12,
                box(width = NULL, solidHeader = TRUE, height = 500,
                    # tableOutput("tbl")
-                   DTOutput("table1")
+                   DT::DTOutput("table1")
+                   # div(DT::DTOutput("table1"),
+                   #     style = "font-size: 75%; width: 75%")
                )
         )
       )
@@ -85,6 +87,27 @@ server <- function(input, output) {
     print(data_table$DTtable)
   })
   
+  # # testing map and table interaction
+  # observeEvent(input$table1_rows_selected, {
+  #   print(input$table1_rows_selected)
+  # })
+  # 
+  # observeEvent(input$map_shape_click, {
+  #   
+  #   #capture the info of the clicked polygon
+  #   map_click <- input$map_shape_click
+  #   print(paste0("click:",map_click))
+  #   # #subset your table with the id of the clicked polygon 
+  #   # selected <- mydata[mydata$myID == click$id,]
+  #   # 
+  #   # #if click id isn't null render the table
+  #   # if(!is.null(click$id)){
+  #   #   output$mytable = DT::renderDataTable({
+  #   #     selected
+  #   #   }) 
+  #   # } 
+  # })
+  # ## end testing table / map interaction
   
   # drawn map
   output$map <- renderLeaflet({
